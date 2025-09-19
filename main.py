@@ -1,6 +1,5 @@
 import requests
 from bs4 import BeautifulSoup
-import time
 from telegram import Bot
 import os
 
@@ -9,7 +8,7 @@ TELEGRAM_TOKEN = os.environ.get('8289814129:AAGhJL_DjLl104OwK1RsxZ90DiNP6hynqGc'
 CHAT_ID = os.environ.get('198842533')
 
 # الكلمات المفتاحية للبحث
-KEYWORDS = ['محاسب', 'comptable', 'accountant', 'finance', ' comptabilité']
+KEYWORDS = ['محاسب', 'comptable', 'accountant', 'finance']
 LOCATIONS = ['الرباط', 'تمارة', 'Rabat', 'Temara']
 
 def send_telegram_message(message):
@@ -44,12 +43,17 @@ def search_indeed():
                 location = location_elem.get_text().strip() if location_elem else "غير محدد"
                 
                 # التحقق من الكلمات المفتاحية والمواقع
-                if any(keyword.lower() in title.lower() for keyword in KEYWORDS) or \
-                   any(keyword.lower() in company.lower() for keyword in KEYWORDS):
-                    if any(loc.lower() in location.lower() for loc in LOCATIONS):
-                        job_link = "https://ma.indeed.com" + title_elem.find('a')['href'] if title_elem.find('a') else ""
-                        job_info = f"💼 Indeed - وظيفة جديدة:\nعنوان: {title}\nالشركة: {company}\nالموقع: {location}\nالرابط: {job_link}"
-                        jobs.append(job_info)
+                title_lower = title.lower()
+                company_lower = company.lower()
+                location_lower = location.lower()
+                
+                keyword_match = any(keyword.lower() in title_lower or keyword.lower() in company_lower for keyword in KEYWORDS)
+                location_match = any(loc.lower() in location_lower for loc in LOCATIONS)
+                
+                if keyword_match and location_match:
+                    job_link = "https://ma.indeed.com" + title_elem.find('a')['href'] if title_elem.find('a') else ""
+                    job_info = f"💼 Indeed - وظيفة جديدة:\nعنوان: {title}\nالشركة: {company}\nالموقع: {location}\nالرابط: {job_link}"
+                    jobs.append(job_info)
     except Exception as e:
         print(f"خطأ في indeed: {e}")
     
@@ -79,13 +83,18 @@ def search_emploi_ma():
                 location = location_elem.get_text().strip() if location_elem else "غير محدد"
                 
                 # التحقق من الكلمات المفتاحية والمواقع
-                if any(keyword.lower() in title.lower() for keyword in KEYWORDS) or \
-                   any(keyword.lower() in company.lower() for keyword in KEYWORDS):
-                    if any(loc.lower() in location.lower() for loc in LOCATIONS):
-                        job_link_elem = title_elem.find('a')
-                        job_link = "https://www.emploi.ma" + job_link_elem['href'] if job_link_elem else ""
-                        job_info = f"💼 Emploi.ma - وظيفة جديدة:\nعنوان: {title}\nالشركة: {company}\nالموقع: {location}\nالرابط: {job_link}"
-                        jobs.append(job_info)
+                title_lower = title.lower()
+                company_lower = company.lower()
+                location_lower = location.lower()
+                
+                keyword_match = any(keyword.lower() in title_lower or keyword.lower() in company_lower for keyword in KEYWORDS)
+                location_match = any(loc.lower() in location_lower for loc in LOCATIONS)
+                
+                if keyword_match and location_match:
+                    job_link_elem = title_elem.find('a')
+                    job_link = "https://www.emploi.ma" + job_link_elem['href'] if job_link_elem else ""
+                    job_info = f"💼 Emploi.ma - وظيفة جديدة:\nعنوان: {title}\nالشركة: {company}\nالموقع: {location}\nالرابط: {job_link}"
+                    jobs.append(job_info)
     except Exception as e:
         print(f"خطأ في emploi.ma: {e}")
     
@@ -106,7 +115,10 @@ def main():
         send_telegram_message(message)
         print(f"تم إرسال {len(all_jobs)} وظيفة")
     else:
-        print("لا توجد وظائف جديدة")
+        message = "لا توجد وظائف جديدة حالياً"
+        print(message)
+        # إرسال رسالة حتى لو لم توجد وظائف (للتأكد أن البرنامج يعمل)
+        # send_telegram_message(message)
 
 if __name__ == "__main__":
     main()
