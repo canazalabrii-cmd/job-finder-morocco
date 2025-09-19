@@ -55,7 +55,7 @@ def search_indeed():
     
     return jobs
 
-def search emploi_ma():
+def search_emploi_ma():
     """البحث في emploi.ma"""
     jobs = []
     try:
@@ -97,7 +97,7 @@ def main():
     
     # البحث في المواقع
     indeed_jobs = search_indeed()
-    emploi_jobs = searchemploi_ma()
+    emploi_jobs = search_emploi_ma()
     
     all_jobs = indeed_jobs + emploi_jobs
     
